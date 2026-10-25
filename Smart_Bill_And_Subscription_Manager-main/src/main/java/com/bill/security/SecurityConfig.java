@@ -77,19 +77,8 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Frontend URLs (local dev, default deployed frontend, and dynamic FRONTEND_URL env var)
-        List<String> origins = new ArrayList<>();
-        origins.add("http://localhost:5173");
-        origins.add("https://smartbillmanager.vercel.app");
-        if (frontendUrl != null && !frontendUrl.isBlank()) {
-            for (String url : frontendUrl.split(",")) {
-                String trimmed = url.trim();
-                if (!trimmed.isEmpty() && !origins.contains(trimmed)) {
-                    origins.add(trimmed);
-                }
-            }
-        }
-        configuration.setAllowedOrigins(origins);
+        // Allow all origin patterns for local dev (localhost, 127.0.0.1, LAN IP) and deployed frontends (Vercel, Render)
+        configuration.setAllowedOriginPatterns(List.of("*"));
 
         // HTTP Methods
         configuration.setAllowedMethods(List.of(

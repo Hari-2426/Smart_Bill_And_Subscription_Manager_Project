@@ -7,7 +7,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 45000,
 });
 
 // Request Interceptor: Attach JWT Token automatically
@@ -45,6 +45,11 @@ apiClient.interceptors.response.use(
         }
       }
 
+      // If login failed with 403 / 401, provide a clean friendly message
+      if ((status === 403 || status === 401) && error.config?.url?.includes('/login')) {
+        return Promise.reject(new Error('Invalid email or password. Please verify your credentials or create an account.'));
+      }
+
       // Extract user-friendly error message
       const serverMessage =
         error.response.data?.message ||
@@ -53,7 +58,7 @@ apiClient.interceptors.response.use(
 
       return Promise.reject(new Error(serverMessage));
     } else if (error.request) {
-      return Promise.reject(new Error('Unable to connect to SmartBill server. Please verify backend is running on port 8080.'));
+      return Promise.reject(new Error('Unable to connect to SmartBill server. Please verify backend is running and reachable.'));
     } else {
       return Promise.reject(new Error(error.message || 'An unexpected error occurred.'));
     }
