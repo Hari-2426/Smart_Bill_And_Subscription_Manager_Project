@@ -1,0 +1,37 @@
+# Frontend files not needed for backend Docker build
+frontend/
+
+# Build outputs
+target/
+**/target/
+*.jar
+*.war
+
+# Node dependencies
+node_modules/
+**/node_modules/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Environment files
+.env
+**/.env
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+.factorypath
+
+# OS and logs
+.DS_Store
+Thumbs.db
+*.log
+tmp/
+temp/
