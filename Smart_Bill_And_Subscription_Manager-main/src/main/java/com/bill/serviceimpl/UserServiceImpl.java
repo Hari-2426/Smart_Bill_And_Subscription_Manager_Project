@@ -43,6 +43,9 @@ public class UserServiceImpl implements UserServiceInterface {
     
     @Autowired
     private MailService emailService;
+
+    @Autowired
+    private com.bill.services.OtpService otpService;
     
     private Users getLoggedInActiveUser() {
 
@@ -64,19 +67,40 @@ public class UserServiceImpl implements UserServiceInterface {
     }
 
     @Override
+    public void sendRegisterOtp(com.bill.request.dto.SendOtpRequestDTO request) {
+        if (request == null || request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new RuntimeException("Email address is required.");
+        }
+        String email = request.getEmail().trim().toLowerCase();
+        Users existingUser = userRepo.findByEmail(email);
+        if (existingUser != null) {
+            throw new RuntimeException("Email already registered. Please sign in instead.");
+        }
+        otpService.sendRegisterOtp(email, request.getName());
+    }
+
+    @Override
     public UserRegisterResponseDTO registerNewUser(UserRegisterRequestDTO register) {
 
-        Users existingUser = userRepo.findByEmail(register.getEmail());
+        String email = register.getEmail().trim().toLowerCase();
+        Users existingUser = userRepo.findByEmail(email);
 
         if (existingUser != null) {
             throw new RuntimeException("Email already registered.");
         }
 
+        if (register.getOtp() == null || register.getOtp().isBlank()) {
+            throw new RuntimeException("Verification code is required to complete registration.");
+        }
+
+        // Verify the OTP entered by user
+        otpService.verifyRegisterOtp(email, register.getOtp());
+
         Users user = new Users();
 
         user.setFirstName(register.getFirstName());
         user.setLastName(register.getLastName());
-        user.setEmail(register.getEmail());
+        user.setEmail(email);
         user.setPassword(encoder.encode(register.getPassword()));
 
         user.setRole(UserEnum.USER);
@@ -90,6 +114,11 @@ public class UserServiceImpl implements UserServiceInterface {
 
         BeanUtils.copyProperties(savedUser, response);
 
+        String token = jwtService.generateToken(
+                savedUser.getEmail(),
+                savedUser.getRole().name());
+        response.setToken(token);
+
         return response;
     }
 
@@ -98,31 +127,81 @@ public class UserServiceImpl implements UserServiceInterface {
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
+                        loginRequest.getEmail().trim(),
                         loginRequest.getPassword()));
 
-        Users user = userRepo.findByEmail(loginRequest.getEmail());
+        Users user = userRepo.findByEmail(loginRequest.getEmail().trim().toLowerCase());
 
         if (user == null) {
             throw new RuntimeException("User not found.");
         }
-        if(user.getAccountStatus()==AccountStatusEnum.INACTIVE)
-		{
-			throw new RuntimeException("Account is already deactivated.");
-		}
+        if (user.getAccountStatus() == AccountStatusEnum.INACTIVE) {
+            throw new RuntimeException("Account is already deactivated.");
+        }
 
+        // Send 6-digit login verification OTP to user's email
+        otpService.sendLoginOtp(user.getEmail(), user.getFirstName());
+
+        UserLoginResponseDTO response = new UserLoginResponseDTO();
+        response.setUserId(user.getUserId());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole());
+        response.setOtpRequired(true);
+        response.setMessage("Verification code sent to your email. Please verify to sign in.");
+
+        return response;
+    }
+
+    @Override
+    public UserLoginResponseDTO verifyLoginOtp(com.bill.request.dto.VerifyLoginOtpRequestDTO request) {
+        if (request == null || request.getEmail() == null || request.getOtp() == null) {
+            throw new RuntimeException("Email and verification code are required.");
+        }
+
+        String email = request.getEmail().trim().toLowerCase();
+
+        // 1. Verify OTP
+        otpService.verifyLoginOtp(email, request.getOtp());
+
+        // 2. Fetch User and validate status
+        Users user = userRepo.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User not found.");
+        }
+        if (user.getAccountStatus() == AccountStatusEnum.INACTIVE) {
+            throw new RuntimeException("Account is deactivated.");
+        }
+
+        // 3. Issue JWT Token upon verified login
         String token = jwtService.generateToken(
                 user.getEmail(),
                 user.getRole().name());
 
         UserLoginResponseDTO response = new UserLoginResponseDTO();
-
         BeanUtils.copyProperties(user, response);
-
         response.setToken(token);
+        response.setOtpRequired(false);
         response.setMessage("Login Successful");
 
         return response;
+    }
+
+    @Override
+    public void resendLoginOtp(com.bill.request.dto.SendOtpRequestDTO request) {
+        if (request == null || request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new RuntimeException("Email address is required.");
+        }
+        String email = request.getEmail().trim().toLowerCase();
+        Users user = userRepo.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User not found.");
+        }
+        if (user.getAccountStatus() == AccountStatusEnum.INACTIVE) {
+            throw new RuntimeException("Account is deactivated.");
+        }
+        otpService.sendLoginOtp(user.getEmail(), user.getFirstName());
     }
 
 	@Override

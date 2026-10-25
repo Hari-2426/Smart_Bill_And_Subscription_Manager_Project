@@ -7,6 +7,24 @@ export const authApi = {
     return response.data;
   },
 
+  // POST /users/auth/register/send-otp
+  sendRegisterOtp: async (data) => {
+    const response = await apiClient.post('/users/auth/register/send-otp', data);
+    return response.data;
+  },
+
+  // POST /users/auth/login/verify-otp
+  verifyLoginOtp: async (data) => {
+    const response = await apiClient.post('/users/auth/login/verify-otp', data);
+    return response.data;
+  },
+
+  // POST /users/auth/login/resend-otp
+  resendLoginOtp: async (data) => {
+    const response = await apiClient.post('/users/auth/login/resend-otp', data);
+    return response.data;
+  },
+
   // POST /users/auth/register
   register: async (userData) => {
     const response = await apiClient.post('/users/auth/register', userData);

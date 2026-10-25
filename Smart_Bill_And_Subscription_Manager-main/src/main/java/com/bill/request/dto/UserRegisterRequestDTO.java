@@ -23,5 +23,5 @@ public class UserRegisterRequestDTO {
 	
 	private long phoneNumber;
 	
-
+	private String otp;
 }

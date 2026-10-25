@@ -110,6 +110,42 @@ public class MailService {
         return sb.toString();
     }
 
+    public void sendRegisterOtpMail(String userName, String email, String otp) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setFrom(fromMail);
+        mailMessage.setTo(email);
+        mailMessage.setSubject("🔐 SmartBill - Registration Verification Code");
+        mailMessage.setText(
+                "Dear " + (userName != null && !userName.isBlank() ? userName : "User") + ",\n\n" +
+                "Thank you for signing up for SmartBill!\n\n" +
+                "Your registration verification code is:\n\n" +
+                "    " + otp + "\n\n" +
+                "This code is valid for 10 minutes. Please enter it on the registration screen to complete your account setup.\n\n" +
+                "If you did not request this verification code, please ignore this email.\n\n" +
+                "Regards,\n" +
+                "SmartBill Team"
+        );
+        sendSafely(mailMessage);
+    }
+
+    public void sendLoginOtpMail(String userName, String email, String otp) {
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setFrom(fromMail);
+        mailMessage.setTo(email);
+        mailMessage.setSubject("🔐 SmartBill - Login Verification Code");
+        mailMessage.setText(
+                "Dear " + (userName != null && !userName.isBlank() ? userName : "User") + ",\n\n" +
+                "A sign-in attempt was initiated for your SmartBill account.\n\n" +
+                "Your one-time login verification code is:\n\n" +
+                "    " + otp + "\n\n" +
+                "This code is valid for 10 minutes.\n\n" +
+                "If you did not initiate this login request, please secure your account by changing your password immediately.\n\n" +
+                "Regards,\n" +
+                "SmartBill Team"
+        );
+        sendSafely(mailMessage);
+    }
+
     public void sendRegistrationMail(String userName, String email) {
 
         SimpleMailMessage mailMessage = new SimpleMailMessage();

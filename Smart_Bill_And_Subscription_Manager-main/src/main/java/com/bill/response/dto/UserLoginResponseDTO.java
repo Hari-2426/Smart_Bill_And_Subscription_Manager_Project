@@ -18,4 +18,5 @@ public class UserLoginResponseDTO {
 	private UserEnum role;
 	private String token;
 	private String message;
+	private boolean otpRequired;
 }

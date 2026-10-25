@@ -25,6 +25,7 @@ public class UserRegisterResponseDTO {
 	
 	private LocalDateTime createdAt;
 	
+	private String token;
 	
 	// We can write User logged in successfully or registered successfully
 

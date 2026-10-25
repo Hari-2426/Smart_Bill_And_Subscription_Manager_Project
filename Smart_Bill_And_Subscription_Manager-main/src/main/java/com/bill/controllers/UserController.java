@@ -33,10 +33,30 @@ public class UserController {
 		return userService.registerNewUser(registerRequest);
 	}
 	
+	@PostMapping("/register/send-otp")
+	public java.util.Map<String, String> sendRegisterOtp(@RequestBody com.bill.request.dto.SendOtpRequestDTO request)
+	{
+		userService.sendRegisterOtp(request);
+		return java.util.Map.of("message", "Verification code sent to your email.");
+	}
+
 	@PostMapping("/login")
 	public UserLoginResponseDTO loginUser(@RequestBody UserLoginRequestDTO loginUserRequest)
 	{
 		return userService.loginUser(loginUserRequest);
+	}
+
+	@PostMapping("/login/verify-otp")
+	public UserLoginResponseDTO verifyLoginOtp(@RequestBody com.bill.request.dto.VerifyLoginOtpRequestDTO request)
+	{
+		return userService.verifyLoginOtp(request);
+	}
+
+	@PostMapping("/login/resend-otp")
+	public java.util.Map<String, String> resendLoginOtp(@RequestBody com.bill.request.dto.SendOtpRequestDTO request)
+	{
+		userService.resendLoginOtp(request);
+		return java.util.Map.of("message", "A new verification code has been sent to your email.");
 	}
 	
 	

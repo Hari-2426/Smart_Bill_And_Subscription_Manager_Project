@@ -22,6 +22,12 @@ public interface UserServiceInterface {
 	
 	public ChangePasswordResponseDTO updatePassword(ChangePasswordRequestDTO changePasswordRequest);
 	
+	public void sendRegisterOtp(com.bill.request.dto.SendOtpRequestDTO request);
+	
+	public UserLoginResponseDTO verifyLoginOtp(com.bill.request.dto.VerifyLoginOtpRequestDTO request);
+	
+	public void resendLoginOtp(com.bill.request.dto.SendOtpRequestDTO request);
+	
 	public String deleteAccount();
 
 }

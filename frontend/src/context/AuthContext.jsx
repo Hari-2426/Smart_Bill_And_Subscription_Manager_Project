@@ -55,8 +55,57 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const verifyLoginOtp = async (email, otp) => {
+    const data = await authApi.verifyLoginOtp({ email, otp });
+    if (data.token) {
+      localStorage.setItem('smartbill_token', data.token);
+      setToken(data.token);
+      const userProfile = {
+        userId: data.userId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        role: data.role,
+      };
+      localStorage.setItem('smartbill_user', JSON.stringify(userProfile));
+      setUser(userProfile);
+      // Fetch full profile details asynchronously
+      authApi.getProfile().then((full) => {
+        setUser(full);
+        localStorage.setItem('smartbill_user', JSON.stringify(full));
+      }).catch(() => {});
+    }
+    return data;
+  };
+
+  const sendRegisterOtp = async (email, name) => {
+    return await authApi.sendRegisterOtp({ email, name });
+  };
+
+  const resendLoginOtp = async (email) => {
+    return await authApi.resendLoginOtp({ email });
+  };
+
   const register = async (userData) => {
-    return await authApi.register(userData);
+    const data = await authApi.register(userData);
+    if (data.token) {
+      localStorage.setItem('smartbill_token', data.token);
+      setToken(data.token);
+      const userProfile = {
+        userId: data.userId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        role: 'USER',
+      };
+      localStorage.setItem('smartbill_user', JSON.stringify(userProfile));
+      setUser(userProfile);
+      authApi.getProfile().then((full) => {
+        setUser(full);
+        localStorage.setItem('smartbill_user', JSON.stringify(full));
+      }).catch(() => {});
+    }
+    return data;
   };
 
   const logout = () => {
@@ -85,6 +134,9 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!token,
         isLoading,
         login,
+        verifyLoginOtp,
+        sendRegisterOtp,
+        resendLoginOtp,
         register,
         logout,
         refreshProfile,
