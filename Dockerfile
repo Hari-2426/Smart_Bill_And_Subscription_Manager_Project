@@ -46,5 +46,5 @@ EXPOSE 8080
 # Default environment port fallback
 ENV PORT=8080
 
-# Execute Spring Boot application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Execute Spring Boot application with container-aware memory allocation (Render 512MB RAM)
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-Xmx384m", "-Xss512k", "-jar", "app.jar"]

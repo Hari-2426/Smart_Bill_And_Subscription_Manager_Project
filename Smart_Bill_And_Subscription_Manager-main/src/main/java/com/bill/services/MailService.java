@@ -29,6 +29,10 @@ public class MailService {
     @Value("${brevo.api.key:${BREVO_API_KEY:}}")
     private String brevoApiKey;
 
+    private final HttpClient httpClient = HttpClient.newBuilder()
+        .connectTimeout(java.time.Duration.ofSeconds(10))
+        .build();
+
     private void sendSafely(SimpleMailMessage mail) {
         // 1. Primary: Use Brevo HTTPS REST API over Port 443 (supported on Render / cloud)
         if (brevoApiKey != null && !brevoApiKey.isBlank()) {
@@ -64,7 +68,6 @@ public class MailService {
                 toJsonString(content)
             );
 
-            HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
                 .header("Content-Type", "application/json")
@@ -72,7 +75,7 @@ public class MailService {
                 .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
                 .build();
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 System.out.println("Email sent successfully via Brevo HTTPS API to: " + toEmail);
                 return true;
