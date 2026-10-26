@@ -7,7 +7,7 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 45000,
+  timeout: 90000,
 });
 
 // Request Interceptor: Attach JWT Token automatically
@@ -57,8 +57,10 @@ apiClient.interceptors.response.use(
         `Request failed with status ${status}`;
 
       return Promise.reject(new Error(serverMessage));
+    } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      return Promise.reject(new Error('The cloud server is taking longer than usual to wake up. It is now active—please try again now!'));
     } else if (error.request) {
-      return Promise.reject(new Error('Unable to connect to SmartBill server. Please verify backend is running and reachable.'));
+      return Promise.reject(new Error('Unable to reach the SmartBill server. If the server was sleeping, it is waking up now—please click again!'));
     } else {
       return Promise.reject(new Error(error.message || 'An unexpected error occurred.'));
     }
