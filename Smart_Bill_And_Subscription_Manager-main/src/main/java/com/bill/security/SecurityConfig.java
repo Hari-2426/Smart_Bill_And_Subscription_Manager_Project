@@ -49,6 +49,8 @@ public class SecurityConfig {
                                 "/users/auth/login",
                                 "/users/auth/login/**",
                                 "/admins/login",
+                                "/health",
+                                "/test/**",
                                 "/error"
                         ).permitAll()
 

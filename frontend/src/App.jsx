@@ -26,7 +26,7 @@ const AppContent = () => {
   // Pre-warm Render backend on initial app load to minimize cold starts
   useEffect(() => {
     const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-    fetch(`${backendUrl}/error`, { method: 'GET', mode: 'cors' }).catch(() => {});
+    fetch(`${backendUrl}/health`, { method: 'GET', mode: 'cors' }).catch(() => {});
   }, []);
 
   // Listen to admin URL entries (e.g. #admin or /admin)
